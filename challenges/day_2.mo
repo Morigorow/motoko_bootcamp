@@ -3,6 +3,10 @@ import Char "mo:base/Char";
 import Nat "mo:base/Nat";
 import Array "mo:base/Array";
 import Text "mo:base/Text";
+import Debug "mo:base/Debug";
+import Blob "mo:base/Blob";
+import Int "mo:base/Int";
+import Iter "mo:base/Iter";
 
 actor {
     // Challenge 1
@@ -58,7 +62,7 @@ actor {
     // Challenge 5
     public func capitalize_text(t : Text) : async Text {
         var cap_text : Text = "";
-        var new_char : Char = 'a';
+        var new_char : Char = '_';
 
         for (char in t.chars()) {
             if (Char.isLowercase(char)) {
@@ -86,8 +90,48 @@ actor {
 
     // Challenge 8
     public func duplicated_character(t: Text) : async Text {
-        for (char in Text.toIter(t)) {
-            
+        var trimed_text : Text = "";
+
+        label dup_check for (c in Text.toIter(t)) {
+            var target : Text.Pattern = #char(c);
+
+            if (Text.contains(trimed_text, target)) {
+                return(Char.toText(c));
+            };
+            trimed_text := Text.concat(trimed_text, Char.toText(c));
         };
+        // Duplicated_character is not found.
+        return(t);
+    };
+
+    // Challenge 9
+    public func size_in_bytes(t : Text) : async Nat {
+        let utf8_text : Blob = Text.encodeUtf8(t);
+        return(utf8_text.size());
+    };
+
+    // Challenge 10
+    private func _swap(array : [Nat], i : Nat, j : Nat) : [Nat] {
+        let array_mutable = Array.thaw<Nat>(array);
+        let tmp = array_mutable[i];
+
+        array_mutable[i] := array_mutable[j];
+        array_mutable[j] := tmp;
+
+        return(Array.freeze<Nat>(array_mutable));
+    };
+
+    public func buble_sort(array : [Nat]) : async [Nat] {
+        var sorted_array : [Nat] = array;
+        var size = array.size() - 1;
+
+        for (i in Iter.range(0, size)) {
+            for (j in Iter.range(1, size - i)) {
+                if (sorted_array[j - 1] > sorted_array[j]) {
+                    sorted_array := _swap(sorted_array, j - 1, j);
+                };
+            };
+        };
+        return(sorted_array);
     };
 };
